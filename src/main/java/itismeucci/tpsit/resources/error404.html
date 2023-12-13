@@ -14,14 +14,12 @@
         text-align: center;
         opacity: 1;
         animation: fade-in 10s linear;
-        * {
-          color: #ff0000;
-          font-family: OptimusPrinceps, sans-serif;
-          letter-spacing: 5px;
-          font-size: 8em;
-          font-weight: 400;
-          animation: fade-in 10s linear, text-zoom 5s linear;
-        }
+        color: #ff0000;
+        font-family: 'Times New Roman', Times, serif;
+        letter-spacing: 5px;
+        font-size: 4em;
+        font-weight: 100;
+        animation: fade-in 10s linear, text-zoom 5s linear;
         }
 
         @keyframes fade-in {
@@ -37,25 +35,19 @@
         }
 
         @keyframes text-zoom {
-        0% {
-          font-size: 5em;
-        }
-        25% {
-          font-size: 6em;
-        }
-        50% {
-          font-size: 7em;
-        }
-        75% {
-          font-size: 8em;
-        }
-        100% {
-          font-size: 8em;
-        }
-        }
+  0% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.25, 1.25);
+  }
+  100% {
+    transform: scale(1.5, 1.5);
+  }
+}
     </style>
     <div class="death-background"> 
-      <p>Error 404</p>
+      <p>ERROR 404</p>
     </div>
   </body>
   </html>
