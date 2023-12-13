@@ -62,7 +62,7 @@ public class ServerThread extends Thread {
         File page = new File(uri);
         String body = "";
         try {
-            body = Files.readString(page.toPath());
+            body = Files.readString(page.toPath());//fare lollo.svg !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             return body;
         } catch (IOException e) {
             return null;
