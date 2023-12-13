@@ -2,6 +2,7 @@ package itismeucci.tpsit;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
 
 public class ServerThread extends Thread {
     
@@ -36,18 +37,64 @@ public class ServerThread extends Thread {
         } catch (IOException e) {
             System.out.println("Something went wrong!");
         }
-        
-        for (;;) {
-
-            String str;
-            try {
-                    
-                closeConnection();
-
-            } catch (Exception e) {
-                e.printStackTrace();
+    
+    
+        String uri = "", request;
+        try {
+            if(!(request = in.readLine()).isEmpty()){
+                uri = "src/main/java/itismeucci/tpsit/resources" + (uri = request.split(" ")[1]) + "/index.html";
+                if(getBody(uri) == null)
+                    sendError();
+                else
+                    sendPage(uri);
+                System.out.println("Request: " + request);
+                System.out.println("URI: " + uri);
             }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+    
+    }
+
+    public String getBody(String uri){
+
+        File page = new File(uri);
+        String body = "";
+        try {
+            body = Files.readString(page.toPath());
+            return body;
+        } catch (IOException e) {
+            return null;
+        }
+
+    }
+
+    public void sendPage(String uri){
+
+        String body = getBody(uri);
+        out.println("HTTP /1.1 200 OK");
+        out.println("Content-Type: text/html");
+        out.println("Content-Length: " + body.getBytes().length );
+        out.println("");
+        out.println(body);
+        closeConnection();
+    }
+
+    public void sendError(){
+
+        File page = new File("src/main/java/itismeucci/tpsit/resources/error404.html");
+        String body = "";
+        try {
+            body = Files.readString(page.toPath());
+        } catch (IOException e) {
+        }
+        out.println("HTTP /1.1 404 Page not found");
+        out.println("Content-Type: text/html");
+        out.println("Content-Length: " + body.getBytes().length );
+        out.println(""); 
+        out.println(body);
+        closeConnection();
     }
     
     public void closeConnection() {
@@ -56,7 +103,7 @@ public class ServerThread extends Thread {
         try {
             in.close();
             out.close();
-            client.close();
+            //client.close();
         } catch (Exception e) {
             System.out.println("Something went wrong!");
         }
