@@ -2,8 +2,15 @@
   <head>
 
   </head>
-  <body>
+  <body style="background-color: rgb(63, 23, 23);">
     <style>
+        #pere{
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-top: 18%;
+          margin-bottom: 18%;
+        }
         .death-background {
           background: black;
           height: 200px;
@@ -20,7 +27,7 @@
           letter-spacing: 5px;
           font-size: 4em;
           font-weight: 100;
-          animation: fade-in 8s linear, text-zoom 5s linear;
+          animation: fade-in 8s linear, text-zoom 5 s linear;
         }
 
         @keyframes fade-in {
@@ -47,9 +54,12 @@
           }
         }
     </style>
-    <div class="death-background"> 
+    <div id="pere">
+      <div class="death-background"> 
       <p class="textAnimation">ERROR 404</p>
     </div>
-  </body>
+    </div>
+    
+  </body>   
   </html>
 
