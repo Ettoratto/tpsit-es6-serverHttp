@@ -14,12 +14,13 @@
           text-align: center;
           opacity: 1;
           animation: fade-in 10s linear;
-          color: #ff0000;
+        }
+        .textAnimation{color: #ff0000;
           font-family: 'Times New Roman', Times, serif;
           letter-spacing: 5px;
           font-size: 4em;
           font-weight: 100;
-          animation: fade-in 10s linear, text-zoom 5s linear;
+          animation: fade-in 8s linear, text-zoom 5s linear;
         }
 
         @keyframes fade-in {
@@ -27,7 +28,7 @@
             opacity: 0;
           }
           25% {
-            opacity: 0.5;
+            opacity: 1;
           }
           100% {
             opacity: 1;
@@ -36,18 +37,18 @@
 
         @keyframes text-zoom {
           0% {
-            transform: scale(1, 1);
+            transform: scale(0.5, 0.5);
           }
           50% {
-            transform: scale(1.25, 1.25);
+            transform: scale(0.75, 0.75);
           }
           100% {
-            transform: scale(1.5, 1.5);
+            transform: scale(1, 1);
           }
         }
     </style>
     <div class="death-background"> 
-      <p>ERROR 404</p>
+      <p class="textAnimation">ERROR 404</p>
     </div>
   </body>
   </html>
