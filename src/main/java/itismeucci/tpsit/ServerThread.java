@@ -3,6 +3,10 @@ package itismeucci.tpsit;
 import java.io.*;
 import java.net.*;
 import java.nio.file.Files;
+import java.util.Base64;
+
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 
 public class ServerThread extends Thread {
     
@@ -42,11 +46,13 @@ public class ServerThread extends Thread {
         String uri = "", request;
         try {
             if(!(request = in.readLine()).isEmpty()){
-                uri = "src/main/java/itismeucci/tpsit/resources" + (uri = request.split(" ")[1]) + "/index.html";
-                if(getBody(uri) == null)
-                    sendError();
-                else
+                uri = "src/main/java/itismeucci/tpsit/resources" + (uri = request.split(" ")[1]);
+                if (request.substring(5, 8).equals("img"))
+                    sendImage(uri);
+                else if(getBody(uri + "/index.html") != null)
                     sendPage(uri);
+                else
+                    sendError();
                 System.out.println("Request: " + request);
                 System.out.println("URI: " + uri);
             }
@@ -59,10 +65,9 @@ public class ServerThread extends Thread {
 
     public String getBody(String uri){
 
-        File page = new File(uri);
-        String body = "";
+        File content = new File(uri);
         try {
-            body = Files.readString(page.toPath());//fare lollo.svg !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            String body = Files.readString(content.toPath());
             return body;
         } catch (IOException e) {
             return null;
@@ -70,15 +75,38 @@ public class ServerThread extends Thread {
 
     }
 
-    public void sendPage(String uri){
+    public void sendPage(String uri) {
 
-        String body = getBody(uri);
+        String body = getBody(uri + "/index.html");
         out.println("HTTP /1.1 200 OK");
         out.println("Content-Type: text/html");
-        out.println("Content-Length: " + body.getBytes().length );
-        out.println("");
+        out.println("Content-Length: " + body.getBytes().length);
+        out.println();
         out.println(body);
         closeConnection();
+    }
+    
+    public void sendImage(String uri) {
+        
+        File content = new File(uri);
+        out.println("HTTP /1.1 200 OK");
+        out.println("Content-Type: image/jpeg");
+        out.println("Content-Length: " + content.length());
+        out.println();
+
+        //chatgpt
+        try(FileInputStream fileInputStream = new FileInputStream(content)){
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                String imageData = Base64.getEncoder().encodeToString(buffer); // non funziona non capisco piango
+                out.println(imageData);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            closeConnection();
+        }//chatgpt
     }
 
     public void sendError(){
