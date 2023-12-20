@@ -3,10 +3,8 @@ package itismeucci.tpsit;
 import java.io.*;
 import java.net.*;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Base64;
-
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 
 public class ServerThread extends Thread {
     
@@ -14,6 +12,7 @@ public class ServerThread extends Thread {
     Socket client;
     BufferedReader in;
     PrintWriter out;
+    DataOutputStream dataout;
 
     public ServerThread(Socket client) throws IOException {
 
@@ -38,6 +37,7 @@ public class ServerThread extends Thread {
         try {
             in = new BufferedReader(new InputStreamReader(client.getInputStream()));
             out = new PrintWriter(client.getOutputStream(), true);
+            dataout = new DataOutputStream(client.getOutputStream());
         } catch (IOException e) {
             System.out.println("Something went wrong!");
         }
@@ -46,13 +46,11 @@ public class ServerThread extends Thread {
         String uri = "", request;
         try {
             if(!(request = in.readLine()).isEmpty()){
-                uri = "src/main/java/itismeucci/tpsit/resources" + (uri = request.split(" ")[1]);
-                if (request.substring(5, 8).equals("img"))
-                    sendImage(uri);
-                else if(getBody(uri + "/index.html") != null)
-                    sendPage(uri);
-                else
-                    sendError();
+                String fileName = request.split(" ")[1];
+                if (fileName.endsWith("/")) {
+                    fileName += "index.html";
+                }
+               send(fileName.substring(1)); // rimuove la / iniziale
                 System.out.println("Request: " + request);
                 System.out.println("URI: " + uri);
             }
@@ -74,55 +72,59 @@ public class ServerThread extends Thread {
         }
 
     }
-
-    public void sendPage(String uri) {
-
-        String body = getBody(uri + "/index.html");
-        out.println("HTTP /1.1 200 OK");
-        out.println("Content-Type: text/html");
-        out.println("Content-Length: " + body.getBytes().length);
-        out.println();
-        out.println(body);
-        closeConnection();
-    }
     
-    public void sendImage(String uri) {
-        
-        File content = new File(uri);
-        out.println("HTTP /1.1 200 OK");
-        out.println("Content-Type: image/jpeg");
-        out.println("Content-Length: " + content.length());
-        out.println();
+    public void send(String fileName) {
+        try{
+            // recupera un file dalle risorse (dal classpath) compresa evemtuale sottocartella
+            URL resource =  getClass().getClassLoader().getResource(fileName);
 
-        //chatgpt
-        try(FileInputStream fileInputStream = new FileInputStream(content)){
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = fileInputStream.read(buffer)) != -1) {
-                String imageData = Base64.getEncoder().encodeToString(buffer); // non funziona non capisco piango
-                out.println(imageData);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+            File file = new File(resource.toURI());
+            //legge tutti i byte del file
+            byte[] buffer = Files.readAllBytes(file.toPath());
+
+            out.println("HTTP /1.1 200 OK");
+            out.println("Content-Type: " + contentType(fileName));
+            out.println("Content-Length: " + buffer.length);
+            out.println();
+
+            dataout.write(buffer);
+            dataout.flush();
+            out.flush();
+        } catch (Exception e) {
+            sendError();
         } finally {
             closeConnection();
-        }//chatgpt
+        }//profGPT
+    }
+
+    private String contentType(String fileName) {
+        if (fileName.endsWith("html")) {
+            return "text/html";
+        } else if (fileName.endsWith("jpeg") || fileName.endsWith("jpg")) {
+            return "image/jpeg";
+        } else if (fileName.endsWith("css")) {
+            return "text/css";
+        } else if (fileName.endsWith("js")) {
+            return "application/javascript";
+        }
+        throw new RuntimeException();
     }
 
     public void sendError(){
-
-        File page = new File("src/main/java/itismeucci/tpsit/resources/error404.html");
-        String body = "";
-        try {
-            body = Files.readString(page.toPath());
-        } catch (IOException e) {
+        try{
+            URL resource =  getClass().getClassLoader().getResource("error404.html");
+            File page = new File(resource.toURI());
+            String body = Files.readString(page.toPath());
+            out.println("HTTP /1.1 404 Page not found");
+            out.println("Content-Type: text/html");
+            out.println("Content-Length: " + body.getBytes().length );
+            out.println(""); 
+            out.println(body);
+            out.flush();
+            closeConnection();
+        }catch(Exception e){
+            
         }
-        out.println("HTTP /1.1 404 Page not found");
-        out.println("Content-Type: text/html");
-        out.println("Content-Length: " + body.getBytes().length );
-        out.println(""); 
-        out.println(body);
-        closeConnection();
     }
     
     public void closeConnection() {
